@@ -1,11 +1,8 @@
 #Main function for simulating the games
-function simulate(initial_players)
-    next_players = initial_players
+function simulate(current_players)
+    selected_parents = 1:n_players #just initializing to make this global
 
     for generation = 1:n_generations
-        println("num strategies: ", count_strategies(next_players))
-        current_players = next_players
-
         fitness_payoffs = zeros(n_players) #tracks average fitness payoffs from each game
         for game = 1:n_games
             options = rand(1:set_size, n_options_per_game)
@@ -14,21 +11,22 @@ function simulate(initial_players)
                 fitness_payoffs[i] = fitness_payoffs[i] + player_makes_choice(current_players[i,:], utility, options)
             end
         end
-        #fitness_payoffs = fitness_payoffs./n_games
 
         #reproduce
         selected_parents = select_parents(current_players, fitness_payoffs)
+        println("num strategies before mutation: ", count_strategies(current_players[selected_parents, :]))
         next_players = mutate(current_players, selected_parents)
+        println("num strategies after mutation: ", count_strategies(next_players))
+
+        if generation < n_generations #skip this the last time
+            current_players = next_players
+        end
     end
 
     #end_players are weighted sample, not mutated
     #like taking a weighted sample in particle filtering
-    #println("num strategies: ", count_strategies(current_players[selected_parents, :]))
-    #end_players = current_players[selected_parents, :]
-    #println(countmemb(selected_parents))
-
-    println("num strategies: ", count_strategies(next_players))
-    end_players = next_players
+    end_players = current_players[selected_parents, :]
+    println("num strategies at end: ", count_strategies(end_players))
 
     return end_players
 end
@@ -119,6 +117,28 @@ function countmemb(itr)
         d[string(val)] = get!(d, string(val), 0) + 1
     end
     return d
+end
+
+#Get mode strategy from a dictionary
+#Returns the mode strategy strategyand the number of players count with that strategy
+#Input is the players processed such that each player is an element of type string in an array
+function get_mode_strategy(processed_players::Array{String})
+    dictionary = countmemb(processed_players)
+    frequency = Dict()
+    for (k, v) in dictionary
+        if haskey(frequency, v)
+            push!(frequency[v],k)
+        else
+            frequency[v] = [k]
+        end
+    end
+
+    arr = collect(keys(frequency))
+    arr_as_numeric = convert(Array{Int64,1}, arr)
+    count = maximum(arr_as_numeric) #finding mode
+    #length(frequency_Vs[m])==1 ? V = frequency_Vs[m] : V = frequency_Vs[m][1] #in case of tie, take the first V
+    strategy = frequency[count][1]
+    return (strategy, count)
 end
 
 #how many different strategies are there?

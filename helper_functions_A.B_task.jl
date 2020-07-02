@@ -1,6 +1,9 @@
 #Main function for simulating the games
-function simulate(current_players)
+function simulate(current_players, file)
     selected_parents = 1:n_players #just initializing to make this global
+
+    #print initial population to file
+    print_to_file(file, current_players)
 
     for generation = 1:n_generations
         fitness_payoffs = zeros(n_players) #tracks average fitness payoffs from each game
@@ -26,6 +29,10 @@ function simulate(current_players)
 
         if generation < n_generations #skip this the last time
             current_players = next_players
+            #print population to file
+            print_to_file(file, current_players)
+        else #last time
+            print_to_file(file, current_players, true)
         end
     end
 
@@ -123,6 +130,26 @@ function countmemb(itr)
         d[string(val)] = get!(d, string(val), 0) + 1
     end
     return d
+end
+
+#Just joins the "r" and "g"s into one big string
+function process_players(players)
+    processed_players = Array{String}(undef, n_players)
+    for i = 1:n_players
+        processed_players[i] = join(players[i,:])
+    end
+    return processed_players
+end
+
+#function for printing a frequency table to the file
+#inputs are the file to print to, the players, and a boolean for whether this is the last thing to print or not
+function print_to_file(file, players, last_time::Bool=false)
+    processed_players = process_players(players)
+    if ~last_time
+        print(file, countmemb(processed_players), " & ")
+    else
+        print(file, countmemb(processed_players))
+    end
 end
 
 #Get mode strategy from a dictionary

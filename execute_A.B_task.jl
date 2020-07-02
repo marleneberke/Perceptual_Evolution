@@ -2,8 +2,9 @@
 #Second argument is a number used in naming the output file
 
 include("helper_functions_A.B_task.jl")
+include("homebrew_sampling.jl") #instead of StatsBase
 
-using StatsBase
+#using StatsBase
 
 n_generations = 10
 
@@ -29,7 +30,7 @@ n_players = 1000
 initial_players = Matrix{String}(undef, n_players, set_size)
 colors = ["r", "g"] #the colors players can perceive
 for i = 1:n_players
-    initial_players[i,:] = sample(colors, set_size)
+    initial_players[i,:] = homebrew_sample(colors, set_size)
 end
 
 

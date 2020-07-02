@@ -1,3 +1,5 @@
+include("homebrew_sampling.jl")
+
 #Main function for simulating the games
 function simulate(current_players, file)
     selected_parents = 1:n_players #just initializing to make this global
@@ -54,7 +56,7 @@ function rank_preferences(player, utility)
     for c = 1:length(colors)
         color = colors[c]
         tf = player.==color
-        exp_utilities[c] = mean(utility[tf]) #mean or mode? mean right?
+        exp_utilities[c] = sum(utility[tf])/sum(tf) #mean
     end
     ordered = sortperm(exp_utilities, rev=true) #sorted in order of preference
     ranked_preferences = colors[ordered]
@@ -77,7 +79,7 @@ function player_makes_choice(player, utility, options)
         i = i+1
         matches = perceived_options.==ranked_preferences[i]
     end
-    selected_option = sample(options[matches]) #choose one of those options of that color
+    selected_option = rand(options[matches]) #choose one of those options of that color
 
     return utility[selected_option]
 end
@@ -92,12 +94,9 @@ function select_parents(current_players, fitness_payoffs)
     if sum(fitness_payoffs)==0 #if all the payoffs were 0, make all the fitnesses equal
         fitness_payoffs = repeat([1], n_players)
     end
-    normalized_fitness_payoffs = fitness_payoffs/sum(fitness_payoffs) #just in case all the payoffs are zeros
-
     #have number of offspring proportional to fitness_payoff
     #resample players with weights proportional to fitness_payoff
-
-    selected_parents = sample(1:n_players, Weights(normalized_fitness_payoffs), n_players, replace = true)
+    selected_parents = homebrew_sample(collect(1:n_players), fitness_payoffs, n_players)
     return selected_parents
 end
 

@@ -15,9 +15,13 @@ file = open(outfile, "w")
 #file header
 print(file, "proportion_task_A", " & ")
 for generation = 0:n_generations-1
-	print(file, "frequency_table_of_perceptual_systems_after_generation_", generation, " & ")
+	print(file, "frequency_table_of_perceptual_systems_generation_", generation, " & ")
+	print(file, "proportion_veridical_generation_", generation, " & ")
+	print(file, "average_invertability_generation_", generation, " & ")
 end
-print(file, "frequency_table_of_perceptual_systems_after_generation_", n_generations, "\n")
+print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, " & ")
+print(file, "proportion_veridical_generation_", n_generations, " & ")
+print(file, "average_invertability_generation_", generation, "\n")
 
 probability_of_task_A = 0.5
 #probability_of_task_A = parse(Float64, ARGS[1])

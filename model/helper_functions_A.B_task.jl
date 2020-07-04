@@ -146,8 +146,12 @@ function print_to_file(file, players, last_time::Bool=false)
     processed_players = process_players(players)
     if ~last_time
         print(file, countmemb(processed_players), " & ")
+        print(file, proportion_veridical(players), " & ")
+        print(file, average_invertability(players), " & ")
     else
-        print(file, countmemb(processed_players))
+        print(file, countmemb(processed_players), " & ")
+        print(file, proportion_veridical(players), " & ")
+        print(file, average_invertability(players))
     end
 end
 
@@ -183,7 +187,51 @@ function count_strategies(players)
     return length(unique(processed_players))
 end
 
-#Given a player, says whether they are interface or not
-function is_interface(player)
+#Given a player, says whether they are veridical or not
+function is_veridical(player)
+    color_order = []
+    push!(color_order, player[1])
+    i = 2
+    while length(color_order) < 3 & i <= length(player)
+        if player[i] !== color_order[length(color_order)]
+            push!(color_order, player[i])
+        end
+        i = i+1
+    end
+    return length(color_order) < 3
+end
 
+#Given a matrix of players, returns the percentage that are veridical
+function proportion_veridical(players)
+    n_players = size(players)[1]
+    how_many_veridical = 0
+    for i = 1:n_players
+        how_many_veridical = how_many_veridical + is_veridical(players[i,:])
+    end
+    return how_many_veridical/n_players
+end
+
+#Calculates a metric of how invertable a player's represention of the
+#world (the set) is
+#When two colors, it's how different the guesses would be. When three or more colors... unsure.
+#Only implemented for two colors
+function invertability(player)
+    set = collect(1:set_size)
+    @assert length(colors)==2
+    guesses = Array{Float64}(undef, 2)
+    for c = 1:length(colors)
+        color = colors[c]
+        guesses[c] = sum(set[player.==color])/sum(player.==color) #guess as to value in set when you see that color
+    end
+    return abs(guesses[1]-guesses[2])
+end
+
+#Given a matrix of players, returns the average invertability of the group
+function average_invertability(players)
+    n_players = size(players)[1]
+    total_invertability = 0
+    for i = 1:n_players
+        total_invertability = total_invertability + invertability(players[i,:])
+    end
+    return total_invertability/n_players
 end

@@ -1,22 +1,26 @@
-#First argument is a Float64 for the proportion of times that the task will be A
+#First argument is an Int64 for the number of tasks
 #Second argument is a number used in naming the output file
 
-include("helper_functions_A.B_task.jl")
+using Distributions
+
+include("helper_functions_many_tasks.jl")
 include("homebrew_sampling.jl") #instead of StatsBase
 
 #using StatsBase
 
-n_generations = 500
+n_generations = 10
 
-outfile = string("output", ARGS[2], ".csv"
-#outfile = string("output222.csv")
-probability_of_task_A = parse(Float64, ARGS[1])
-#probability_of_task_A = 0.5
-
+#outfile = string("output", ARGS[2], ".csv")
+outfile = string("output222.csv")
 file = open(outfile, "w")
 
+#n_tasks = parse(Int64, ARGS[1])
+n_tasks = 5
+
 #file header
-print(file, "proportion_task_A", " & ")
+print(file, "number_of_tasks", " & ")
+print(file, "utility_functions", " & ")
+print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
 	print(file, "frequency_table_of_perceptual_systems_generation_", generation, " & ")
 	print(file, "proportion_veridical_generation_", generation, " & ")
@@ -26,7 +30,7 @@ print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, 
 print(file, "proportion_veridical_generation_", n_generations, " & ")
 print(file, "average_invertability_generation_", n_generations, "\n")
 
-print(file, probability_of_task_A, " & ")
+print(file, n_tasks, " & ")
 
 set_size = 11 #means base things off of 0,...,10
 
@@ -43,13 +47,14 @@ n_games = 2 #number of games played per n_generations
 n_options_per_game = 5 #number of resources to choose from each games
 mutation_probability_per_gene = 0.001 #probability of one of the set_size genes mutating
 
-
-#utilities = [0, 1, 3, 6, 9, 10, 9, 6, 3, 1, 0; 0, 1, 3, 6, 9, 10, 9, 6, 3, 1, 0] #length==set_size
-
-#dist_between_utilities = 5
-utility_A = [1, 6, 10, 6, 1, 0, 0, 0, 0, 0, 0]
-utility_B = [0, 0, 0, 0, 0, 0, 1, 6, 10, 6, 1]
-utilities = hcat(utility_A, utility_B)
+utilities = Matrix{Float64}(undef, n_tasks, set_size)
+is_monotonic_utility = Array{Bool}(undef, n_tasks)
+for task = 1:n_tasks
+	utilities[task, :] = sample_utility_function()
+	is_monotonic_utility[task] = is_monotonic(utilities[task, :])
+end
+print(file, utilities, " & ")
+print(file, sum(is_monotonic_utility), " & ")
 
 #simulate and print to output file
 end_players = simulate(initial_players, file)
@@ -57,6 +62,8 @@ end_players = simulate(initial_players, file)
 #look at end_players
 processed_end_players = process_players(end_players)
 println(countmemb(processed_end_players))
+
+println(proportion_veridical(end_players))
 
 (strategy, count) = get_mode_strategy(processed_end_players)
 

@@ -191,7 +191,7 @@ function is_veridical(player)
     color_order = []
     push!(color_order, player[1])
     i = 2
-    while length(color_order) < 3 & i <= length(player)
+    while length(color_order) < 3 && i <= length(player)
         if player[i] !== color_order[length(color_order)]
             push!(color_order, player[i])
         end

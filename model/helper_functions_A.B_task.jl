@@ -25,9 +25,9 @@ function simulate(current_players, file)
 
         #reproduce
         selected_parents = select_parents(current_players, fitness_payoffs)
-        println("num strategies before mutation: ", count_strategies(current_players[selected_parents, :]))
+        #println("num strategies before mutation: ", count_strategies(current_players[selected_parents, :]))
         next_players = mutate(current_players, selected_parents)
-        println("num strategies after mutation: ", count_strategies(next_players))
+        #println("num strategies after mutation: ", count_strategies(next_players))
 
         if generation < n_generations #skip this the last time
             current_players = next_players
@@ -192,12 +192,16 @@ function is_veridical(player)
     color_order = []
     push!(color_order, player[1])
     i = 2
-    while length(color_order) < 3 & i <= length(player)
+    while length(color_order) < 3 && i <= length(player)
         if player[i] !== color_order[length(color_order)]
             push!(color_order, player[i])
         end
+        println(i)
+        println(color_order)
         i = i+1
     end
+    println("length of color_order ", length(color_order))
+    println("i", i)
     return length(color_order) < 3
 end
 

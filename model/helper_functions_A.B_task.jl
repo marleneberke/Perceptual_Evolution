@@ -221,7 +221,11 @@ function invertability(player)
     guesses = Array{Float64}(undef, 2)
     for c = 1:length(colors)
         color = colors[c]
-        guesses[c] = sum(set[player.==color])/sum(player.==color) #guess as to value in set when you see that color
+        if sum(player.==color)==0 #if one of the colors isn't present. preventing NANs
+            guesses[c] = sum(set)/set_size #mean of the whole set
+        else
+            guesses[c] = sum(set[player.==color])/sum(player.==color) #guess as to value in set when you see that color
+        end
     end
     return abs(guesses[1]-guesses[2])
 end

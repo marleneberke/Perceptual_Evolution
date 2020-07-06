@@ -21,7 +21,7 @@ for generation = 0:n_generations-1
 end
 print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, " & ")
 print(file, "proportion_veridical_generation_", n_generations, " & ")
-print(file, "average_invertability_generation_", generation, "\n")
+print(file, "average_invertability_generation_", n_generations, "\n")
 
 probability_of_task_A = 0.5
 #probability_of_task_A = parse(Float64, ARGS[1])

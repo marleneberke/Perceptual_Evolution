@@ -6,12 +6,12 @@ include("homebrew_sampling.jl") #instead of StatsBase
 
 #using StatsBase
 
-n_generations = 500
+n_generations = 1000
 
-outfile = string("output", ARGS[2], ".csv"
-#outfile = string("output222.csv")
-probability_of_task_A = parse(Float64, ARGS[1])
-#probability_of_task_A = 0.5
+#outfile = string("output", ARGS[2], ".csv"
+outfile = string("output222.csv")
+#probability_of_task_A = parse(Float64, ARGS[1])
+probability_of_task_A = 0.0
 
 file = open(outfile, "w")
 
@@ -57,6 +57,8 @@ end_players = simulate(initial_players, file)
 #look at end_players
 processed_end_players = process_players(end_players)
 println(countmemb(processed_end_players))
+
+println("proportion of veridical strategies ", proportion_veridical(end_players))
 
 (strategy, count) = get_mode_strategy(processed_end_players)
 

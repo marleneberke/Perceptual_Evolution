@@ -1,5 +1,7 @@
 include("homebrew_sampling.jl")
 
+using Distributions
+
 #Main function for simulating the games
 function simulate(current_players, file)
     selected_parents = 1:n_players #just initializing to make this global
@@ -96,7 +98,10 @@ function select_parents(current_players, fitness_payoffs)
     end
     #have number of offspring proportional to fitness_payoff
     #resample players with weights proportional to fitness_payoff
+    println("here")
     selected_parents = homebrew_sample(collect(1:n_players), fitness_payoffs, n_players)
+    #normalized_fitness_payoffs = fitness_payoffs/sum(fitness_payoffs) #just in case all the payoffs are zeros
+    #selected_parents = sample(1:n_players, Weights(normalized_fitness_payoffs), n_players, replace = true)
     return selected_parents
 end
 
@@ -196,12 +201,12 @@ function is_veridical(player)
         if player[i] !== color_order[length(color_order)]
             push!(color_order, player[i])
         end
-        println(i)
-        println(color_order)
+        # println(i)
+        # println(color_order)
         i = i+1
     end
-    println("length of color_order ", length(color_order))
-    println("i", i)
+    # println("length of color_order ", length(color_order))
+    # println("i", i)
     return length(color_order) < 3
 end
 

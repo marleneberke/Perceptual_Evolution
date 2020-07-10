@@ -1,7 +1,7 @@
 library(tidyverse)
 library(Rfast)
 
-raw_data <- read_delim("output222.csv",
+raw_data <- read_delim("merged.csv",
                        "&", escape_double = FALSE, trim_ws = TRUE)
 
 data <- raw_data %>% select(proportion_task_A, proportion_veridical_generation_500, average_invertability_generation_500)
@@ -78,3 +78,9 @@ invertibility_plot <- function(data){
 veridical_plot(data)
 invertibility_plot(data)
 
+#proportion task A = 0.5
+data <- raw_data %>% filter(proportion_task_A==0.5)
+data <- data %>% select(contains("proportion_veridical"))
+data %>% gather(variable, value) %>% separate(variable, into = c("x","y","z", "time"), sep="_") %>%
+  group_by(time) %>% summarize(veridicality = mean(value)) %>% mutate(time = as.numeric(time)) %>%
+  ggplot(aes(time, veridicality)) + geom_line()

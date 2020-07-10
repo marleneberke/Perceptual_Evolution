@@ -1,7 +1,7 @@
 library(tidyverse)
 library(Rfast)
 
-raw_data <- read_delim("output222.csv",
+raw_data <- read_delim("merged.csv",
                        "&", escape_double = FALSE, trim_ws = TRUE)
 
 to_vector <- function(column){
@@ -12,6 +12,7 @@ to_vector <- function(column){
 alphas <- to_vector(raw_data$alphas_of_utility_functions)
 betas <- to_vector(raw_data$betas_of_utility_functions)
 
+exp <- alphas/(alphas+betas)
 
 p = seq(0,1, length=11)
 y = matrix(0, length(alphas), length(p))

@@ -8,18 +8,22 @@ include("homebrew_sampling.jl") #instead of StatsBase
 
 #using StatsBase
 
-n_generations = 10
+n_generations = 1000
 
-#outfile = string("output", ARGS[2], ".csv")
-outfile = string("output222.csv")
+outfile = string("output", ARGS[2], ".csv")
+#outfile = string("output222.csv")
+n_tasks = parse(Int64, ARGS[1])
+#n_tasks = 1
+n_options_per_game = parse(Int64, ARGS[3])
+
 file = open(outfile, "w")
-
-#n_tasks = parse(Int64, ARGS[1])
-n_tasks = 5
 
 #file header
 print(file, "number_of_tasks", " & ")
+print(file, "n_options_per_game", " & ")
 print(file, "utility_functions", " & ")
+print(file, "alphas_of_utility_functions", " & ")
+print(file, "betas_of_utility_functions", " & ")
 print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
 	print(file, "frequency_table_of_perceptual_systems_generation_", generation, " & ")
@@ -31,6 +35,7 @@ print(file, "proportion_veridical_generation_", n_generations, " & ")
 print(file, "average_invertability_generation_", n_generations, "\n")
 
 print(file, n_tasks, " & ")
+print(file, n_options_per_game, " & ")
 
 set_size = 11 #means base things off of 0,...,10
 
@@ -43,17 +48,21 @@ for i = 1:n_players
 end
 
 
-n_games = 2 #number of games played per n_generations
+n_games = n_tasks #number of games played per n_generations
 n_options_per_game = 5 #number of resources to choose from each games
 mutation_probability_per_gene = 0.001 #probability of one of the set_size genes mutating
 
 utilities = Matrix{Float64}(undef, n_tasks, set_size)
+alphas = Array{Float64}(undef, n_tasks)
+betas = Array{Float64}(undef, n_tasks)
 is_monotonic_utility = Array{Bool}(undef, n_tasks)
 for task = 1:n_tasks
-	utilities[task, :] = sample_utility_function()
+	utilities[task, :], alphas[task], betas[task] = sample_utility_function()
 	is_monotonic_utility[task] = is_monotonic(utilities[task, :])
 end
 print(file, utilities, " & ")
+print(file, alphas, " & ")
+print(file, betas, " & ")
 print(file, sum(is_monotonic_utility), " & ")
 
 #simulate and print to output file

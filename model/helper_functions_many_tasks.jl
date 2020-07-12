@@ -24,9 +24,9 @@ function simulate(current_players, file)
 
         #reproduce
         selected_parents = select_parents(current_players, fitness_payoffs)
-        println("num strategies before mutation: ", count_strategies(current_players[selected_parents, :]))
+        #println("num strategies before mutation: ", count_strategies(current_players[selected_parents, :]))
         next_players = mutate(current_players, selected_parents)
-        println("num strategies after mutation: ", count_strategies(next_players))
+        #println("num strategies after mutation: ", count_strategies(next_players))
 
         if generation < n_generations #skip this the last time
             current_players = next_players
@@ -40,7 +40,7 @@ function simulate(current_players, file)
     #end_players are weighted sample, not mutated
     #like taking a weighted sample in particle filtering
     end_players = current_players[selected_parents, :]
-    println("num strategies at end: ", count_strategies(end_players))
+    #println("num strategies at end: ", count_strategies(end_players))
 
     return end_players
 end
@@ -243,10 +243,17 @@ end
 function sample_utility_function()
     utility = Array{Float64}(undef, set_size)
 
-    #sample alpha and beta between 0 and max. max seems to effect the shape of the average of utility functions
-    max = 10
-    alpha = rand()*max
-    beta = rand()*max
+    #sample mu from uniform between 0 and 1
+    mu = rand()
+
+    #sample v from exponential with lamda
+    lambda = 1
+    E = Exponential(lambda)
+    v = rand(E)
+
+    #solve for alpha and beta paramatrization
+    alpha = mu*v
+    beta = (1-mu)*v
     B = Beta(alpha, beta)
 
     for x = 0:(set_size-1) #making sure to include 0 and 1
@@ -255,7 +262,7 @@ function sample_utility_function()
 
     #normalize the utility function so it sums to 1 (to prevent one task from outweighing the others)
     utility = utility/sum(utility)
-    return utility
+    return (utility, alpha, beta)
 end
 
 #checks if a utility function is monotonic
@@ -282,7 +289,7 @@ function check()
     avg_utility = zeros(set_size)
     n = 10000
     for i = 1:n
-        avg_utility = avg_utility + sample_utility_function()
+        avg_utility = avg_utility + sample_utility_function()[1]
     end
     return avg_utility/n
 end

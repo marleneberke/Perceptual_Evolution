@@ -13,6 +13,7 @@ alphas <- to_vector(raw_data$alphas_of_utility_functions)
 betas <- to_vector(raw_data$betas_of_utility_functions)
 
 exp <- alphas/(alphas+betas)
+hist(exp)
 
 p = seq(0,1, length=11)
 y = matrix(0, length(alphas), length(p))
@@ -27,7 +28,7 @@ for (i in 1:length(alphas)){
 }
 #legend(0.7,8, c("Be(100,100)","Be(10,10)","Be(2,2)", "Be(1,1)"),lty=c(1,1,1,1),col=c(4,3,2,1))
 #add average line
-lines(p, colSums(y)/length(alphas), type = "l", col=1, lwd=3)
+lines(p, colSums(y)/length(alphas), type = "l", col=1, lwd=5)
 
 ####################################################################################
 
@@ -105,6 +106,16 @@ invertibility_plot(data)
 
 raw_data <- read_delim("merged.csv",
                        "&", escape_double = FALSE, trim_ws = TRUE)
-data <- raw_data %>% select(number_of_tasks, proportion_veridical_generation_1000, average_invertability_generation_1000)
+data <- raw_data %>% select(number_of_tasks, n_options_per_game, proportion_veridical_generation_1000, average_invertability_generation_1000)
 data <- data %>% mutate(average_invertability_generation_1000 = as.numeric(as.character(str_sub(average_invertability_generation_1000, 1, -18))))
+
+
+#proportion task A = 0.5
+#%>% filter(proportion_task_A==0.5)
+#data <- raw_data %>% filter(number_of_tasks==2) %>% filter(n_options_per_game==10)
+data <- raw_data %>% filter(number_of_tasks==100)  %>% filter(n_options_per_game==1)
+data <- data %>% select(contains("proportion_veridical"))
+data %>% gather(variable, value) %>% separate(variable, into = c("x","y","z", "time"), sep="_") %>%
+  group_by(time) %>% summarize(veridicality = mean(value)) %>% mutate(time = as.numeric(time)) %>%
+  ggplot(aes(time, veridicality)) + geom_line() + ylim(0,1)
 

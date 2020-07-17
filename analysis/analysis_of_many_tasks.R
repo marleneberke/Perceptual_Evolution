@@ -1,7 +1,7 @@
 library(tidyverse)
 library(Rfast)
 
-raw_data <- read_delim("merged.csv",
+raw_data <- read_delim("output222.csv",
                        "&", escape_double = FALSE, trim_ws = TRUE)
 
 to_vector <- function(column){
@@ -14,6 +14,36 @@ betas <- to_vector(raw_data$betas_of_utility_functions)
 
 exp <- alphas/(alphas+betas)
 hist(exp)
+
+mode <- (alphas-1)/(alphas+betas-2)
+hist(mode)
+
+
+#Graphs for binned
+set_size = 11
+p = seq(0, 1, length=set_size+1)
+dist = (p[2] - p[1])/2
+x = vector(mode = "numeric", length=set_size)
+for (j in 1:length(x)){
+  x[j] = dist + p[j]
+}
+
+y = matrix(0, length(alphas), length(x))
+#y[1,] = pbeta(x+dist, alphas[i], betas[i]) - pbeta(x-dist, alphas[i], betas[i])
+#plot(p, y[1,], ylab="density", type ="l", col=1, ylim=c(0,1))
+plot(NULL, xlim=c(0,1), ylim=c(0,1), ylab="y label", xlab="x lablel")
+for (i in 1:length(alphas)){
+  y[i,] <- pbeta(x+dist, alphas[i], betas[i]) - pbeta(x-dist, alphas[i], betas[i])
+  lines(x, y[i,], type ="l", col=i)
+}
+#legend(0.7,8, c("Be(100,100)","Be(10,10)","Be(2,2)", "Be(1,1)"),lty=c(1,1,1,1),col=c(4,3,2,1))
+#add average line
+lines(x, colSums(y)/length(alphas), type = "l", col=1, lwd=5)
+
+
+
+
+
 
 p = seq(0,1, length=11)
 y = matrix(0, length(alphas), length(p))
@@ -61,7 +91,7 @@ veridical_plot <- function(data){
     )
   ) + geom_ribbon() + geom_line() + coord_cartesian(ylim = c(0, 1)) + theme(aspect.ratio=1) + ylab("Perceptage of individuals with veridical perception")
   
-  ggsave("veridical_plot.pdf", p)
+  ggsave("veridical_plot.png", p)
 }
 
 ###################################################################
@@ -93,7 +123,7 @@ invertibility_plot <- function(data){
     )
   ) + geom_ribbon() + geom_line() + ylab("Average invertibility")
   
-  ggsave("invertibility_plot.pdf", p)
+  ggsave("invertibility_plot.png", p)
 }
 
 
@@ -113,7 +143,7 @@ data <- data %>% mutate(average_invertability_generation_1000 = as.numeric(as.ch
 #proportion task A = 0.5
 #%>% filter(proportion_task_A==0.5)
 #data <- raw_data %>% filter(number_of_tasks==2) %>% filter(n_options_per_game==10)
-data <- raw_data %>% filter(number_of_tasks==100)  %>% filter(n_options_per_game==1)
+data <- raw_data %>% filter(number_of_tasks==100)  %>% filter(n_options_per_game==10)
 data <- data %>% select(contains("proportion_veridical"))
 data %>% gather(variable, value) %>% separate(variable, into = c("x","y","z", "time"), sep="_") %>%
   group_by(time) %>% summarize(veridicality = mean(value)) %>% mutate(time = as.numeric(time)) %>%

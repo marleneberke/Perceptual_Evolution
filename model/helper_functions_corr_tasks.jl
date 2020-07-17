@@ -1,7 +1,5 @@
 include("homebrew_sampling.jl")
 
-using Distributions
-
 #Main function for simulating the games
 function simulate(current_players, file)
     selected_parents = 1:n_players #just initializing to make this global
@@ -16,9 +14,9 @@ function simulate(current_players, file)
             #players choose which option to take. their payoff is the utility of their choice
             #utility = utilities[:, game] #each game uses a different utility function
             if rand() < probability_of_task_A
-                utility = utilities[:, 1] #task A
+                utility = utilities[1, :] #task A
             else
-                utility = utilities[:, 2] #task B
+                utility = utilities[2, :] #task B
             end
             for i = 1:n_players
                 fitness_payoffs[i] = fitness_payoffs[i] + player_makes_choice(current_players[i,:], utility, options)
@@ -149,7 +147,6 @@ end
 function print_to_file(file, players, last_time::Bool=false)
     processed_players = process_players(players)
     if ~last_time
-        print(file, countmemb(processed_players), " & ")
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
     else
@@ -291,4 +288,33 @@ function complement(y::Array{Float64}, rho::Float64, x::Array{Float64})
     beta = inv(Y'*Y)*Y'*x
     y_perp = x-Y*beta #residuals
     return rho * std(y_perp) * y + y_perp * std(y) * sqrt(1-rho^2)
+end
+
+#checks if a utility function is monotonic
+function is_monotonic(utility::Array{Float64})
+    i = 2
+    while utility[i-1] == utility[i]
+        i = i+1
+    end #now utility[i-1] != utility[i]
+    increasing = utility[i-1] < utility[i]
+    if increasing
+        while (i <= set_size) && (utility[i-1] < utility[i])
+            i = i+1
+        end
+    else #decreasing
+        while (i <= set_size) && (utility[i-1] > utility[i])
+            i = i+1
+        end
+    end
+    return i>set_size #if made it all the way to set_size, it's monotonic
+end
+
+#just out of curiosity, what would the average of current way of sampling the utility function look like?
+function check()
+    avg_utility = zeros(set_size)
+    n = 10000
+    for i = 1:n
+        avg_utility = avg_utility + sample_utility_function()[1]
+    end
+    return avg_utility/n
 end

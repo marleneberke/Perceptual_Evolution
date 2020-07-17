@@ -1,10 +1,11 @@
-#First argument is a Float64 for the proportion of times that the task will be A
+#First argument is a Float64 for the correlation between tasks A and B
 #Second argument is a number used in naming the output file
+#Third argument is a number of options to give
+
+using Distributions
 
 include("helper_functions_corr_tasks.jl")
 include("homebrew_sampling.jl") #instead of StatsBase
-
-#using StatsBase
 
 n_generations = 1000
 
@@ -20,8 +21,11 @@ file = open(outfile, "w")
 #file header
 print(file, "correlation_between_A_and_B", " & ")
 print(file, "n_options_per_game", " & ")
+print(file, "utility_functions", " & ")
+print(file, "alphas_of_utility_functions", " & ")
+print(file, "betas_of_utility_functions", " & ")
+print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
-	print(file, "frequency_table_of_perceptual_systems_generation_", generation, " & ")
 	print(file, "proportion_veridical_generation_", generation, " & ")
 	print(file, "average_invertability_generation_", generation, " & ")
 end
@@ -42,16 +46,26 @@ for i = 1:n_players
     initial_players[i,:] = homebrew_sample(colors, set_size)
 end
 
-
+n_tasks = 2
 n_games = 2 #number of games played per n_generations
 #n_options_per_game = 5 #number of resources to choose from each games
 mutation_probability_per_gene = 0.001 #probability of one of the set_size genes mutating
 probability_of_task_A = 0.5
 
 (utilities, alphas, betas) = sample_utility_function(correlation)
-# utility_A = [1, 6, 10, 6, 1, 0, 0, 0, 0, 0, 0]
-# utility_B = [0, 0, 0, 0, 0, 0, 1, 6, 10, 6, 1]
-# utilities = hcat(utility_A, utility_B)
+
+utilities = Matrix{Float64}(undef, n_tasks, set_size)
+alphas = Array{Float64}(undef, n_tasks)
+betas = Array{Float64}(undef, n_tasks)
+is_monotonic_utility = Array{Bool}(undef, n_tasks)
+for task = 1:n_tasks
+	utilities[task, :], alphas[task], betas[task] = sample_utility_function()
+	is_monotonic_utility[task] = is_monotonic(utilities[task, :])
+end
+print(file, utilities, " & ")
+print(file, alphas, " & ")
+print(file, betas, " & ")
+print(file, sum(is_monotonic_utility), " & ")
 
 #simulate and print to output file
 end_players = simulate(initial_players, file)

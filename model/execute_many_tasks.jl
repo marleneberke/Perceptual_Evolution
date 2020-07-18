@@ -1,12 +1,11 @@
 #First argument is an Int64 for the number of tasks
 #Second argument is a number used in naming the output file
+#Third argument is a number of options to give
 
 using Distributions
 
 include("helper_functions_many_tasks.jl")
 include("homebrew_sampling.jl") #instead of StatsBase
-
-#using StatsBase
 
 n_generations = 1000
 
@@ -15,6 +14,7 @@ outfile = string("output", ARGS[2], ".csv")
 n_tasks = parse(Int64, ARGS[1])
 #n_tasks = 1
 n_options_per_game = parse(Int64, ARGS[3])
+#n_options_per_game = 5 #number of resources to choose from each games
 
 file = open(outfile, "w")
 
@@ -26,13 +26,12 @@ print(file, "alphas_of_utility_functions", " & ")
 print(file, "betas_of_utility_functions", " & ")
 print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
-	print(file, "frequency_table_of_perceptual_systems_generation_", generation, " & ")
 	print(file, "proportion_veridical_generation_", generation, " & ")
 	print(file, "average_invertability_generation_", generation, " & ")
 end
-print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, " & ")
 print(file, "proportion_veridical_generation_", n_generations, " & ")
-print(file, "average_invertability_generation_", n_generations, "\n")
+print(file, "average_invertability_generation_", n_generations, " & ")
+print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, "\n")
 
 print(file, n_tasks, " & ")
 print(file, n_options_per_game, " & ")
@@ -49,7 +48,6 @@ end
 
 
 n_games = n_tasks #number of games played per n_generations
-n_options_per_game = 5 #number of resources to choose from each games
 mutation_probability_per_gene = 0.001 #probability of one of the set_size genes mutating
 
 utilities = Matrix{Float64}(undef, n_tasks, set_size)
@@ -57,7 +55,7 @@ alphas = Array{Float64}(undef, n_tasks)
 betas = Array{Float64}(undef, n_tasks)
 is_monotonic_utility = Array{Bool}(undef, n_tasks)
 for task = 1:n_tasks
-	utilities[task, :], alphas[task], betas[task] = sample_utility_function()
+	utilities[task, :], alphas[task], betas[task] = sample_utility_function_non_monotonic()
 	is_monotonic_utility[task] = is_monotonic(utilities[task, :])
 end
 print(file, utilities, " & ")

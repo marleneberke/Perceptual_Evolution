@@ -10,7 +10,13 @@ function simulate(current_players, file)
     for generation = 1:n_generations
         fitness_payoffs = zeros(n_players) #tracks average fitness payoffs from each game
         for game = 1:n_games
-            options = rand(1:set_size, n_options_per_game)
+            #options = rand(1:set_size, n_options_per_game)
+            #cutting out 0 and 1
+            #options = rand(2:set_size-1, n_options_per_game)
+
+            #sample without replacement
+            options = sample_wo_repl!(collect(1:set_size), n_options_per_game)
+
             #players choose which option to take. their payoff is the utility of their choice
             #utility = utilities[:, game] #each game uses a different utility function
 
@@ -144,13 +150,12 @@ end
 function print_to_file(file, players, last_time::Bool=false)
     processed_players = process_players(players)
     if ~last_time
-        print(file, countmemb(processed_players), " & ")
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
     else
-        print(file, countmemb(processed_players), " & ")
         print(file, proportion_veridical(players), " & ")
-        print(file, average_invertability(players))
+        print(file, average_invertability(players), " & ")
+        print(file, countmemb(processed_players))
     end
 end
 
@@ -243,25 +248,67 @@ end
 function sample_utility_function()
     utility = Array{Float64}(undef, set_size)
 
-    #sample mu from uniform between 0 and 1
-    mu = rand()
+    # #sample mu from uniform between 0 and 1
+    # mu = rand()
+    #
+    # #sample v from exponential with lamda
+    # lambda = 1
+    # E = Exponential(lambda)
+    # v = rand(E)
+    #
+    # #solve for alpha and beta paramatrization
+    # alpha = mu*v
+    # beta = (1-mu)*v
 
-    #sample v from exponential with lamda
-    lambda = 1
-    E = Exponential(lambda)
-    v = rand(E)
+    # Mode and concentration parametrization
+    w = rand()
+    k = rand(Exponential(1)) + 2 #greater than 2
+    alpha = w*(k-2)+1
+    beta = (1-w)*(k-2)+1
 
-    #solve for alpha and beta paramatrization
-    alpha = mu*v
-    beta = (1-mu)*v
+    # # Mean and variance but only alpha and beta > 1
+    # #sample mu from uniform between 0 and 1
+    # mu = rand()
+    #
+    # alpha = 0
+    # beta = 0
+    #
+    # #just keep resampling variance until I get alpha and beta > 1
+    # while (alpha < 1 || beta < 1)
+    #     #sample v from exponential with lamda
+    #     lambda = 1
+    #     E = Exponential(lambda)
+    #     v = rand(E)
+    #
+    #     #solve for alpha and beta paramatrization
+    #     alpha = mu*v
+    #     beta = (1-mu)*v
+    # end
+
     B = Beta(alpha, beta)
 
-    for x = 0:(set_size-1) #making sure to include 0 and 1
-        utility[x+1] = min(pdf(B, x/(set_size-1)), 99999999) #addresses Inf
+    # PDF method
+    # for x = 0:(set_size-1) #making sure to include 0 and 1
+    #     utility[x+1] = min(pdf(B, x/(set_size-1)), 99999999) #addresses Inf
+    # end
+    #
+    # #normalize the utility function so it sums to 1 (to prevent one task from outweighing the others)
+    # utility = utility/sum(utility)
+
+    # Binned method
+    for x = 1:set_size #making sure to include 0 and 1
+        utility[x] = cdf.(B,(x)/set_size) - cdf.(B,(x-1)/set_size)
     end
 
-    #normalize the utility function so it sums to 1 (to prevent one task from outweighing the others)
-    utility = utility/sum(utility)
+    return (utility, alpha, beta)
+end
+
+#Recursive function that keeps sampling to get non_monotronic utility functions
+function sample_utility_function_non_monotonic()
+    utility, alpha, beta = sample_utility_function()
+    if is_monotonic(utility)
+        utility, alpha, beta = sample_utility_function_non_monotonic()
+    end
     return (utility, alpha, beta)
 end
 

@@ -25,6 +25,7 @@ print(file, "utility_functions", " & ")
 print(file, "alphas_of_utility_functions", " & ")
 print(file, "betas_of_utility_functions", " & ")
 print(file, "how_many_functions_are_monotonic", " & ")
+print(file, "area_of_intersection", " & ")
 for generation = 0:n_generations-1
 	print(file, "proportion_veridical_generation_", generation, " & ")
 	print(file, "average_invertability_generation_", generation, " & ")
@@ -54,18 +55,15 @@ probability_of_task_A = 0.5
 
 (utilities, alphas, betas) = sample_utility_function(correlation)
 
-utilities = Matrix{Float64}(undef, n_tasks, set_size)
-alphas = Array{Float64}(undef, n_tasks)
-betas = Array{Float64}(undef, n_tasks)
 is_monotonic_utility = Array{Bool}(undef, n_tasks)
 for task = 1:n_tasks
-	utilities[task, :], alphas[task], betas[task] = sample_utility_function()
-	is_monotonic_utility[task] = is_monotonic(utilities[task, :])
+	is_monotonic_utility[task] = is_monotonic(utilities[:, task])
 end
 print(file, utilities, " & ")
 print(file, alphas, " & ")
 print(file, betas, " & ")
 print(file, sum(is_monotonic_utility), " & ")
+print(file, area_of_intersection(utilities), " & ")
 
 #simulate and print to output file
 end_players = simulate(initial_players, file)

@@ -14,9 +14,9 @@ function simulate(current_players, file)
             #players choose which option to take. their payoff is the utility of their choice
             #utility = utilities[:, game] #each game uses a different utility function
             if rand() < probability_of_task_A
-                utility = utilities[1, :] #task A
+                utility = utilities[:, 1] #task A
             else
-                utility = utilities[2, :] #task B
+                utility = utilities[:, 2] #task B
             end
             for i = 1:n_players
                 fitness_payoffs[i] = fitness_payoffs[i] + player_makes_choice(current_players[i,:], utility, options)
@@ -272,11 +272,9 @@ function sample_utility_function(rho::Float64)
     positive_z = z .+ abs(minimum(z))
     normalized_z = positive_z / sum(positive_z)
     @assert abs(cor(y, z) - rho) < 0.01 #make sure they are properly correlated
-
-    utilities = hcat(y, z)
+    utilities = hcat(y, normalized_z)
     alphas = [alpha_x, alpha_y]
     betas = [beta_x, beta_y]
-
     return (utilities, alphas, betas)
 end
 
@@ -288,6 +286,18 @@ function complement(y::Array{Float64}, rho::Float64, x::Array{Float64})
     beta = inv(Y'*Y)*Y'*x
     y_perp = x-Y*beta #residuals
     return rho * std(y_perp) * y + y_perp * std(y) * sqrt(1-rho^2)
+end
+
+#Calculate the area of intersection of two utility functions
+#Each column of utilities is a utility function
+function area_of_intersection(utilities::Array{Float64,2})
+    @assert size(utilities)[1] == set_size
+
+    area = 0
+    for i = 1:set_size
+        area = area + min(utilities[i,1], utilities[i,2])
+    end
+    return area
 end
 
 #checks if a utility function is monotonic

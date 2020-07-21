@@ -1,5 +1,7 @@
 include("homebrew_sampling.jl")
 
+using Distributions
+
 #Main function for simulating the games
 function simulate(current_players, file)
     selected_parents = 1:n_players #just initializing to make this global
@@ -14,9 +16,9 @@ function simulate(current_players, file)
             #players choose which option to take. their payoff is the utility of their choice
             #utility = utilities[:, game] #each game uses a different utility function
             if rand() < probability_of_task_A
-                utility = utilities[:, 1] #task A
+                utility = utilities[1, :] #task A
             else
-                utility = utilities[:, 2] #task B
+                utility = utilities[2, :] #task B
             end
             for i = 1:n_players
                 fitness_payoffs[i] = fitness_payoffs[i] + player_makes_choice(current_players[i,:], utility, options)
@@ -272,13 +274,15 @@ function sample_utility_function(rho::Float64)
     positive_z = z .+ abs(minimum(z))
     normalized_z = positive_z / sum(positive_z)
     @assert abs(cor(y, z) - rho) < 0.01 #make sure they are properly correlated
-    utilities = hcat(y, normalized_z)
+    utilities = vcat(y, normalized_z)
     alphas = [alpha_x, alpha_y]
     betas = [beta_x, beta_y]
     return (utilities, alphas, betas)
 end
 
 # Returns a vector that has correlation rho with y
+# Uses method discussed here: https://stats.stackexchange.com/questions/15011/generate-a-random-variable-with-a-defined-correlation-to-an-existing-variables
+# "I will describe the most general possible solution."
 function complement(y::Array{Float64}, rho::Float64, x::Array{Float64})
     #do a linear regression of x ~ y
     Y = ones(length(y),2)
@@ -289,13 +293,13 @@ function complement(y::Array{Float64}, rho::Float64, x::Array{Float64})
 end
 
 #Calculate the area of intersection of two utility functions
-#Each column of utilities is a utility function
+#Each row of utilities is a utility function
 function area_of_intersection(utilities::Array{Float64,2})
-    @assert size(utilities)[1] == set_size
+    @assert size(utilities)[2] == set_size
 
     area = 0
     for i = 1:set_size
-        area = area + min(utilities[i,1], utilities[i,2])
+        area = area + min(utilities[1,i], utilities[2,i])
     end
     return area
 end

@@ -39,7 +39,7 @@ end
 
 max_n_options_per_game = 11
 
-outfile = string("jobfile_for_corr_tasks.txt")
+outfile = string("jobfile_for_precomputed_corr_tasks.txt")
 file = open(outfile, "w")
 
 
@@ -55,7 +55,7 @@ for j = 1:n_bins
             alpha = hcat(alphas[index], alphas[index+1])
             beta = hcat(betas[index], betas[index+1])
             #println("alpha ", alpha)
-            print(file, "singularity exec julia_test.sif /usr/local/julia/bin/julia interface_project/execute_corr_tasks.jl '", utility_functions, "' '", alpha, "' '", beta, "' ", options,  " ", i, "\n")
+            print(file, "singularity exec julia_test.sif /usr/local/julia/bin/julia interface_project/execute_corr_tasks_with_precomputed_utilities.jl '", utility_functions, "' '", alpha, "' '", beta, "' ", options,  " ", i, "\n")
             global i = i+1
         end
     end

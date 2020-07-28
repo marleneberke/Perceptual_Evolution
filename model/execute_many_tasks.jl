@@ -28,9 +28,11 @@ print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
 	print(file, "proportion_veridical_generation_", generation, " & ")
 	print(file, "average_invertability_generation_", generation, " & ")
+	print(file, "mode_veridical?_generation_", generation, " & ")
 end
 print(file, "proportion_veridical_generation_", n_generations, " & ")
 print(file, "average_invertability_generation_", n_generations, " & ")
+print(file, "mode_veridical?_generation_", n_generations, " & ")
 print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, "\n")
 
 print(file, n_tasks, " & ")

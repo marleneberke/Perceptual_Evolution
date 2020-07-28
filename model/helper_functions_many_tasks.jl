@@ -152,9 +152,13 @@ function print_to_file(file, players, last_time::Bool=false)
     if ~last_time
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
+        strategy,_ = get_mode_strategy(processed_players)
+        print(file, is_veridical(strategy), " & ")
     else
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
+        strategy,_ = get_mode_strategy(processed_players)
+        print(file, is_veridical(strategy), " & ")
         print(file, countmemb(processed_players))
     end
 end

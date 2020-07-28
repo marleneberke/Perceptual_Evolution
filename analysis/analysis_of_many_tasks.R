@@ -1,6 +1,8 @@
 library(tidyverse)
 library(Rfast)
 
+setwd("~/Documents/03_Yale/Projects/004_Debunking_Interface_Theory/Interface_Project_2/Perceptual_Evolution/data/many_tasks/pentalty_lambda_1/merged_csv_directory")
+
 raw_data <- read_delim("merged.csv",
                        "&", escape_double = FALSE, trim_ws = TRUE)
 
@@ -9,8 +11,8 @@ to_vector <- function(column){
   return(as.numeric(unlist(str_split(without_brackets, ","))))
 }
 
-alphas <- to_vector(raw_data$alphas_of_utility_functions[1])
-betas <- to_vector(raw_data$betas_of_utility_functions[1])
+alphas <- to_vector(raw_data$alphas_of_utility_functions)
+betas <- to_vector(raw_data$betas_of_utility_functions)
 
 exp <- alphas/(alphas+betas)
 hist(exp)
@@ -184,14 +186,15 @@ data %>% gather(variable, value) %>% separate(variable, into = c("x","y","z", "t
   group_by(time) %>% summarize(veridicality = mean(value)) %>% mutate(time = as.numeric(time)) %>%
   ggplot(aes(time, veridicality)) + geom_line() + ylim(0,1)
 
-#make a plot with a line for each number of tasks
-###################################################################
 
+###################################################################
+#make a plot with a line for each number of tasks
 n_tasks = c(1,2,5,10,20,30,40,50,100)
 data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
-  filter(n_options_per_game!=1) %>% 
+  #filter(n_options_per_game!=1) %>% 
+  #filter(penalty_value==0.15) %>% 
+  filter(n_options_per_game==9) %>%
   select(number_of_tasks, contains("proportion_veridical"))
-  #select(contains("proportion_veridical"))
 
 dim(data1)[2]-1 #1001
 
@@ -204,8 +207,26 @@ to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>%
 ggplot(data = to_plot, aes(x = as.numeric(time), y = veridicality, color = as.factor(number_of_tasks))) + 
   geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))
 
-#make a plot with a line for each number of tasks
-###################################################################
+ ###################################################################
+#make a plot with a line for each number of tasks. Invertibility version
+n_tasks = c(1,2,5,10,20,30,40,50,100)
+data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
+  filter(n_options_per_game!=1) %>% 
+  select(number_of_tasks, contains("average_invertability"))
+#select(contains("proportion_veridical"))
+
+dim(data1)[2]-1 #1001
+
+temp <- data1 %>% select(contains("average_invertability")) %>% gather(variable, value) %>%
+  separate(variable, into = c("x","y","z", "time"), sep="_")
+
+number_of_tasks <- rep(data1$number_of_tasks, 1001)
+to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>% 
+  summarize(invertability = mean(value))
+ggplot(data = to_plot, aes(x = as.numeric(time), y = invertability, color = as.factor(number_of_tasks))) + 
+  geom_line() + ylim(0,7) + guides(color = guide_legend(reverse = TRUE))
+
+
 
 ###################################################################
 #make a plot with a line for each number of tasks. For number of options
@@ -217,4 +238,23 @@ data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>%
 to_plot <- data1 %>% group_by(n_options_per_game, number_of_tasks) %>% 
   summarize(veridicality = mean(proportion_veridical_generation_1000))
 ggplot(data = to_plot, aes(x = n_options_per_game, y = veridicality, color = as.factor(number_of_tasks))) + 
+  geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))
+
+###################################################################
+#make a plot with a line for each number of tasks. Mode version
+n_tasks = c(1,2,5,10,20,30,40,50,100)
+data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
+  filter(n_options_per_game!=1) %>% 
+  select(number_of_tasks, contains("mode_veridical?"))
+#select(contains("proportion_veridical"))
+
+dim(data1)[2]-1 #1001
+
+temp <- data1 %>% select(contains("mode_veridical?")) %>% gather(variable, value) %>%
+  separate(variable, into = c("x","y","z", "time"), sep="_")
+
+number_of_tasks <- rep(data1$number_of_tasks, 1001)
+to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>% 
+  summarize(mode_strategy_is_veridical = mean(as.numeric(value)))
+ggplot(data = to_plot, aes(x = as.numeric(time), y = mode_strategy_is_veridical, color = as.factor(number_of_tasks))) + 
   geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))

@@ -154,9 +154,13 @@ function print_to_file(file, players, last_time::Bool=false)
     if ~last_time
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
+        strategy,_ = get_mode_strategy(processed_players)
+        print(file, is_veridical(strategy), " & ")
     else
         print(file, proportion_veridical(players), " & ")
         print(file, average_invertability(players), " & ")
+        strategy,_ = get_mode_strategy(processed_players)
+        print(file, is_veridical(strategy), " & ")
         print(file, countmemb(processed_players))
     end
 end
@@ -264,7 +268,7 @@ function sample_utility_function()
 
     # Mode and concentration parametrization
     w = rand()
-    k = rand(Exponential(0.2)) + 2 #greater than 2
+    k = rand(Exponential(1)) + 2 #greater than 2
     alpha = w*(k-2)+1
     beta = (1-w)*(k-2)+1
 

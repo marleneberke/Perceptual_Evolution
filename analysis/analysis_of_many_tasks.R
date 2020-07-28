@@ -42,6 +42,8 @@ for (i in 1:length(alphas)){
 #add average line
 lines(x, colSums(y)/length(alphas), type = "l", col=1, lwd=5)
 
+modes_2 <- mode()
+
 cor(y[1,], y[2,])
 
 p = seq(0,1, length=11)
@@ -188,8 +190,8 @@ data %>% gather(variable, value) %>% separate(variable, into = c("x","y","z", "t
 
 
 ###################################################################
-#make a plot with a line for each number of tasks
-n_tasks = c(1,2,5,10,20,30,40,50,100)
+#make a plot with a line for each number of tasks with error bars
+n_tasks = c(1,2,5,10,20,30,50,100)
 data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
   #filter(n_options_per_game!=1) %>% 
   #filter(penalty_value==0.15) %>% 
@@ -201,15 +203,19 @@ dim(data1)[2]-1 #1001
 temp <- data1 %>% select(contains("proportion_veridical")) %>% gather(variable, value) %>%
   separate(variable, into = c("x","y","z", "time"), sep="_")
 
+GetMean <- function(x){return(t.test(x)$estimate)}
+GetLowerCI <- function(x){return(t.test(x)$conf.int[1])}
+GetTopCI <- function(x){return(t.test(x)$conf.int[2])}
+
 number_of_tasks <- rep(data1$number_of_tasks, 1001)
 to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>% 
-  summarize(veridicality = mean(value))
-ggplot(data = to_plot, aes(x = as.numeric(time), y = veridicality, color = as.factor(number_of_tasks))) + 
-  geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))
+  summarize(Mean=GetMean(value),Lower=GetLowerCI(value),Top=GetTopCI(value))
+ggplot(data = to_plot, aes(x = as.numeric(time), y = Mean, ymin = Lower, ymax = Top, color = as.factor(number_of_tasks))) + 
+  geom_ribbon() + geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE)) + theme(aspect.ratio=1)
 
  ###################################################################
-#make a plot with a line for each number of tasks. Invertibility version
-n_tasks = c(1,2,5,10,20,30,40,50,100)
+#make a plot with a line for each number of tasks. Invertibility version with errorbars
+n_tasks = c(1,2,5,10,20,30,50,100)
 data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
   filter(n_options_per_game!=1) %>% 
   select(number_of_tasks, contains("average_invertability"))
@@ -220,29 +226,35 @@ dim(data1)[2]-1 #1001
 temp <- data1 %>% select(contains("average_invertability")) %>% gather(variable, value) %>%
   separate(variable, into = c("x","y","z", "time"), sep="_")
 
+GetMean <- function(x){return(t.test(x)$estimate)}
+GetLowerCI <- function(x){return(t.test(x)$conf.int[1])}
+GetTopCI <- function(x){return(t.test(x)$conf.int[2])}
+
 number_of_tasks <- rep(data1$number_of_tasks, 1001)
 to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>% 
-  summarize(invertability = mean(value))
-ggplot(data = to_plot, aes(x = as.numeric(time), y = invertability, color = as.factor(number_of_tasks))) + 
-  geom_line() + ylim(0,7) + guides(color = guide_legend(reverse = TRUE))
-
-
+  summarize(Mean=GetMean(value),Lower=GetLowerCI(value),Top=GetTopCI(value))
+ggplot(data = to_plot, aes(x = as.numeric(time), y = Mean, ymin = Lower, ymax = Top, color = as.factor(number_of_tasks))) + 
+  geom_ribbon() + geom_line() + ylim(0,7) + guides(color = guide_legend(reverse = TRUE)) + theme(aspect.ratio=1)
 
 ###################################################################
-#make a plot with a line for each number of tasks. For number of options
-n_tasks = c(1,2,5,10,20,30,40,50,100)
+#make a plot with a line for each number of tasks. For number of options with error bars
+n_tasks = c(1,2,5,10,20,30,50,100)
 data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
   select(number_of_tasks, n_options_per_game, proportion_veridical_generation_1000)
 #select(contains("proportion_veridical"))
 
+GetMean <- function(x){return(t.test(x)$estimate)}
+GetLowerCI <- function(x){return(t.test(x)$conf.int[1])}
+GetTopCI <- function(x){return(t.test(x)$conf.int[2])}
+
 to_plot <- data1 %>% group_by(n_options_per_game, number_of_tasks) %>% 
-  summarize(veridicality = mean(proportion_veridical_generation_1000))
-ggplot(data = to_plot, aes(x = n_options_per_game, y = veridicality, color = as.factor(number_of_tasks))) + 
-  geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))
+  summarize(Mean=GetMean(proportion_veridical_generation_1000),Lower=GetLowerCI(proportion_veridical_generation_1000),Top=GetTopCI(proportion_veridical_generation_1000))
+ggplot(data = to_plot, aes(x = n_options_per_game, y = Mean, ymin = Lower, ymax = Top, color = as.factor(number_of_tasks))) + 
+  geom_ribbon() + geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE)) + theme(aspect.ratio=1)
 
 ###################################################################
-#make a plot with a line for each number of tasks. Mode version
-n_tasks = c(1,2,5,10,20,30,40,50,100)
+#make a plot with a line for each number of tasks. Mode version with error bars
+n_tasks = c(1,2,5,10,20,30,50,100)
 data1 <- raw_data %>% filter(number_of_tasks %in% n_tasks)  %>% 
   filter(n_options_per_game!=1) %>% 
   select(number_of_tasks, contains("mode_veridical?"))
@@ -253,8 +265,15 @@ dim(data1)[2]-1 #1001
 temp <- data1 %>% select(contains("mode_veridical?")) %>% gather(variable, value) %>%
   separate(variable, into = c("x","y","z", "time"), sep="_")
 
+#data is 0 or 1 so use prop.test
+GetLowerCI <- function(x,y){return(prop.test(x,y)$conf.int[1])}
+GetTopCI <- function(x,y){return(prop.test(x,y)$conf.int[2])}
+
 number_of_tasks <- rep(data1$number_of_tasks, 1001)
 to_plot <- cbind(number_of_tasks, temp) %>% group_by(time, number_of_tasks) %>% 
-  summarize(mode_strategy_is_veridical = mean(as.numeric(value)))
-ggplot(data = to_plot, aes(x = as.numeric(time), y = mode_strategy_is_veridical, color = as.factor(number_of_tasks))) + 
-  geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE))
+  summarize(Samples=n(),Hits=sum(value),Mean=mean(value),Lower=GetLowerCI(Hits,Samples),Top=GetTopCI(Hits,Samples))
+ggplot(data = to_plot, aes(x = as.numeric(time), y = Mean, ymin = Lower, ymax = Top, color = as.factor(number_of_tasks))) + 
+  geom_ribbon() + geom_line() + ylim(0,1) + guides(color = guide_legend(reverse = TRUE)) + theme(aspect.ratio=1)
+
+###################################################################
+

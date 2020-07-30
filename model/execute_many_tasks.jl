@@ -27,11 +27,11 @@ print(file, "betas_of_utility_functions", " & ")
 print(file, "how_many_functions_are_monotonic", " & ")
 for generation = 0:n_generations-1
 	print(file, "proportion_veridical_generation_", generation, " & ")
-	print(file, "average_invertability_generation_", generation, " & ")
+	print(file, "average_rmse_generation_", generation, " & ")
 	print(file, "mode_veridical?_generation_", generation, " & ")
 end
 print(file, "proportion_veridical_generation_", n_generations, " & ")
-print(file, "average_invertability_generation_", n_generations, " & ")
+print(file, "average_rmse_generation_", n_generations, " & ")
 print(file, "mode_veridical?_generation_", n_generations, " & ")
 print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, "\n")
 
@@ -49,7 +49,8 @@ for i = 1:n_players
 end
 
 
-n_games = n_tasks #number of games played per n_generations
+#n_games = n_tasks #number of games played per n_generations
+n_games = 100
 mutation_probability_per_gene = 0.001 #probability of one of the set_size genes mutating
 
 utilities = Matrix{Float64}(undef, n_tasks, set_size)

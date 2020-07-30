@@ -151,12 +151,12 @@ function print_to_file(file, players, last_time::Bool=false)
     processed_players = process_players(players)
     if ~last_time
         print(file, proportion_veridical(players), " & ")
-        print(file, average_invertability(players), " & ")
+        print(file, average_rmse(players), " & ")
         strategy,_ = get_mode_strategy(processed_players)
         print(file, is_veridical(strategy), " & ")
     else
         print(file, proportion_veridical(players), " & ")
-        print(file, average_invertability(players), " & ")
+        print(file, average_rmse(players), " & ")
         strategy,_ = get_mode_strategy(processed_players)
         print(file, is_veridical(strategy), " & ")
         print(file, countmemb(processed_players))
@@ -217,6 +217,38 @@ function proportion_veridical(players)
         how_many_veridical = how_many_veridical + is_veridical(players[i,:])
     end
     return how_many_veridical/n_players
+end
+
+#Calculates a metric for the error in inferring world from percepts
+function rmse(player)
+    set = collect(1:set_size)
+    @assert length(colors)==2
+    estimates = Array{Float64}(undef, 2)
+    squared_error = 0
+    for c = 1:length(colors)
+        color = colors[c]
+        N_this_color = sum(player.==color)
+        if sum(player.==color)==0 #if one of the colors isn't present. preventing NANs
+            estimates[c] = sum(set)/set_size #mean of the whole set
+        else
+            estimates[c] = sum(set[player.==color])/N_this_color #guess as to value in set when you see that color
+        end
+
+        estimates_rep = estimates[c]*ones(N_this_color)
+        squared_error = squared_error + sum((estimates_rep - set[player.==color]).^2)
+    end
+    rmse = sqrt(sum(squared_error)/set_size)
+    return rmse
+end
+
+#Given a matrix of players, returns the average invertability of the group
+function average_rmse(players)
+    n_players = size(players)[1]
+    total_rmse = 0
+    for i = 1:n_players
+        total_rmse = total_rmse + rmse(players[i,:])
+    end
+    return total_rmse/n_players
 end
 
 #Calculates a metric of how invertable a player's represention of the

@@ -152,12 +152,12 @@ function print_to_file(file, players, last_time::Bool=false)
     processed_players = process_players(players)
     if ~last_time
         print(file, proportion_veridical(players), " & ")
-        print(file, average_invertability(players), " & ")
+        print(file, average_rmse(players), " & ")
         strategy,_ = get_mode_strategy(processed_players)
         print(file, is_veridical(strategy), " & ")
     else
         print(file, proportion_veridical(players), " & ")
-        print(file, average_invertability(players), " & ")
+        print(file, average_rmse(players), " & ")
         strategy,_ = get_mode_strategy(processed_players)
         print(file, is_veridical(strategy), " & ")
         print(file, countmemb(processed_players))
@@ -220,34 +220,38 @@ function proportion_veridical(players)
     return how_many_veridical/n_players
 end
 
-#Calculates a metric of how invertable a player's represention of the
-#world (the set) is
-#When two colors, it's how different the guesses would be. When three or more colors... unsure.
-#Only implemented for two colors
-function invertability(player)
+#Calculates a metric for the error in inferring world from percepts
+function rmse(player)
     set = collect(1:set_size)
     @assert length(colors)==2
-    guesses = Array{Float64}(undef, 2)
+    estimates = Array{Float64}(undef, 2)
+    squared_error = 0
     for c = 1:length(colors)
         color = colors[c]
+        N_this_color = sum(player.==color)
         if sum(player.==color)==0 #if one of the colors isn't present. preventing NANs
-            guesses[c] = sum(set)/set_size #mean of the whole set
+            estimates[c] = sum(set)/set_size #mean of the whole set
         else
-            guesses[c] = sum(set[player.==color])/sum(player.==color) #guess as to value in set when you see that color
+            estimates[c] = sum(set[player.==color])/N_this_color #guess as to value in set when you see that color
         end
+
+        estimates_rep = estimates[c]*ones(N_this_color)
+        squared_error = squared_error + sum((estimates_rep - set[player.==color]).^2)
     end
-    return abs(guesses[1]-guesses[2])
+    rmse = sqrt(sum(squared_error)/set_size)
+    return rmse
 end
 
-#Given a matrix of players, returns the average invertability of the group
-function average_invertability(players)
+#Given a matrix of players, returns the average rmse of the group
+function average_rmse(players)
     n_players = size(players)[1]
-    total_invertability = 0
+    total_rmse = 0
     for i = 1:n_players
-        total_invertability = total_invertability + invertability(players[i,:])
+        total_rmse = total_rmse + rmse(players[i,:])
     end
-    return total_invertability/n_players
+    return total_rmse/n_players
 end
+
 
 #samples a utility function that approximates a beta distribution
 function sample_utility_function()

@@ -26,11 +26,11 @@ print(file, "alphas_of_utility_functions", " & ")
 print(file, "betas_of_utility_functions", " & ")
 for generation = 0:n_generations-1
 	print(file, "proportion_veridical_generation_", generation, " & ")
-	print(file, "average_invertability_generation_", generation, " & ")
+	print(file, "average_rmse_generation_", generation, " & ")
 	print(file, "mode_veridical?_generation_", generation, " & ")
 end
 print(file, "proportion_veridical_generation_", n_generations, " & ")
-print(file, "average_invertability_generation_", n_generations, " & ")
+print(file, "average_rmse_generation_", n_generations, " & ")
 print(file, "mode_veridical?_generation_", n_generations, " & ")
 print(file, "frequency_table_of_perceptual_systems_generation_", n_generations, "\n")
 

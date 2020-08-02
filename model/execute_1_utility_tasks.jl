@@ -72,7 +72,18 @@ println(proportion_veridical(end_players))
 
 #print utilities, alpha, and beta to a file if <0.02 veridical at end of simulation
 if proportion_veridical(end_players) < 0.02
-	name = string("utility", ARGS[1], ".csv")
+	name = string("utility_accepted", ARGS[1], ".csv")
+	#name = "utility222.csv"
+	utility_file = open(name, "w")
+	print(utility_file, "utility_function", " & ")
+	print(utility_file, "alpha_of_utility_function", " & ")
+	print(utility_file, "beta_of_utility_function", "\n")
+	print(utility_file, utilities, " & ") #there's just one. left over names
+	print(utility_file, alphas, " & ")
+	print(utility_file, betas)
+	close(utility_file)
+else
+    name = string("utility_rejected", ARGS[1], ".csv")
 	#name = "utility222.csv"
 	utility_file = open(name, "w")
 	print(utility_file, "utility_function", " & ")
@@ -83,6 +94,7 @@ if proportion_veridical(end_players) < 0.02
 	print(utility_file, betas)
 	close(utility_file)
 end
+
 
 (strategy, count) = get_mode_strategy(processed_end_players)
 
